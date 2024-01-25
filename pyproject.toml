@@ -5,15 +5,6 @@ description = "TopLogger API SDK"
 authors = ["Hai Duong Tran <tranhd95@gmail.com>"]
 readme = "README.md"
 
-dependencies = [
-    "requests",
-    "requests_cache",
-    "plotly",
-    "seaborn",
-    "pandas",
-    "toplogger@git+https://github.com/tranhd95/toplogger-enhanced"
-]
-
 [tool.poetry.dependencies]
 python = "^3.8"
 requests = "*"
@@ -21,7 +12,6 @@ requests_cache = "*"
 plotly = "*"
 seaborn = "*"
 pandas = "*"
-toplogger = { git = "https://github.com/tranhd95/toplogger-enhanced", branch = "main" }
 
 [tool.poetry.dev-dependencies]
 ruff = "*"
