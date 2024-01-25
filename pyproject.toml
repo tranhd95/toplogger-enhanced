@@ -14,7 +14,7 @@ dependencies = [
     "plotly",
     "seaborn",
     "pandas",
-    "git+https://github.com/tranhd95/toplogger-enhanced.git#egg=toplogger"
+    "toplogger@git+https://github.com/tranhd95/toplogger-enhanced"
 ]
 
 [project.optional-dependencies]
