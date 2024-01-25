@@ -115,41 +115,41 @@ fig.update_layout(yaxis_title="1-5 Opinion")
 fig.update_layout(yaxis_range=[3.5,5])
 st.plotly_chart(fig)
 
-# from itertools import repeat, chain
-# import numpy as np
+from itertools import repeat, chain
+import numpy as np
 
-# df_setter_grade_diff = (
-#     df_climbs
-#     .reset_index()
-#     .assign(
-#         community_grade=lambda x: x.community_grade.apply(lambda grades: [float(g['grade']) for g in grades for _ in range(g['count'])])
-#     )
-#     .assign(
-#         community_grade=lambda x: x.apply(lambda row: np.mean(row['community_grade']) if len(row['community_grade']) > 0 else row['grade'], axis=1),
-#         grade_diff=lambda x: x.grade - x.community_grade
-#     )
-#     .groupby('setter')
-#     .grade_diff
-#     .describe()
-#     .sort_values(by='count', ascending=False)
-#     .iloc[:, 1:]
-# )
+df_setter_grade_diff = (
+    df_climbs
+    .reset_index()
+    .assign(
+        community_grade=lambda x: x.community_grade.apply(lambda grades: [float(g['grade']) for g in grades for _ in range(g['count'])])
+    )
+    .assign(
+        community_grade=lambda x: x.apply(lambda row: np.mean(row['community_grade']) if len(row['community_grade']) > 0 else row['grade'], axis=1),
+        grade_diff=lambda x: x.grade - x.community_grade
+    )
+    .groupby('setter')
+    .grade_diff
+    .describe()
+    .sort_values(by='count', ascending=False)
+    .iloc[:, 1:]
+)
 
-# import matplotlib.pyplot as plt
-# import seaborn as sns
-# import plotly.graph_objects as go
+import matplotlib.pyplot as plt
+import seaborn as sns
+import plotly.graph_objects as go
 
 
-# plt.title('Positive = setter grades harder than community')
-# fig = sns.heatmap(
-#     df_setter_grade_diff.iloc[:, 1:],
-#     annot=True,
-#     center=0.,
-#     vmin=-1.,
-#     vmax=1.0,
-#     linewidth=.5,
-# )
-# st.pyplot(fig.figure)
+plt.title('Positive = setter grades harder than community')
+fig = sns.heatmap(
+    df_setter_grade_diff.iloc[:, 1:],
+    annot=True,
+    center=0.,
+    vmin=-1.,
+    vmax=1.0,
+    linewidth=.5,
+)
+st.pyplot(fig.figure)
 
 # fig = go.Figure(data=go.Heatmap(
 #         z=df_setter_grade_diff,
