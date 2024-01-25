@@ -1,8 +1,9 @@
-[project]
+[tool.poetry]
 name = "toplogger"
-authors = [{name = "Hai Duong Tran", email = "tranhd95@gmail.com"}]
+version = "0.1.0"
+description = "TopLogger API SDK"
+authors = ["Hai Duong Tran <tranhd95@gmail.com>"]
 readme = "README.md"
-dynamic = ["version", "description"]
 
 dependencies = [
     "requests",
@@ -12,13 +13,6 @@ dependencies = [
     "pandas",
     "toplogger@git+https://github.com/tranhd95/toplogger-enhanced"
 ]
-
-[tool.poetry]
-name = "toplogger"
-version = "0.1.0"
-description = "TopLogger API SDK"
-authors = ["Hai Duong Tran <tranhd95@gmail.com>"]
-readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.8"
