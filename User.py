@@ -5,17 +5,18 @@ from toplogger.analysis import get_user_master_tables
 import plotly.express as px
 import plotly.graph_objects as go
 from toplogger.utils import NUM2FRENCHGRADE
+import re
 
 
 sns.set_theme(style="whitegrid")
-
-user_id = 2775463134
-# user_id = st.text_input("Enter your TopLogger's user ID:")
-# if user_id:
-#     try:
-#         user_id = int(user_id)
-#     except ValueError:
-#         st.write("Must be a number.")
+RE_NUMBER = re.compile('\d+')
+user_id = st.text_input("Enter your TopLogger's user ID or whole TopLogger's profile URL:")
+if user_id:
+    try:
+        user_id = RE_NUMBER.findall(user_id)[0]
+        user_id = int(user_id)
+    except ValueError:
+        st.write("Must be a number.")
 
 
 @st.cache_data
