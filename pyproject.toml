@@ -1,7 +1,3 @@
-[build-system]
-requires = ["flit_core >=3.2,<4"]
-build-backend = "flit_core.buildapi"
-
 [project]
 name = "toplogger"
 authors = [{name = "Hai Duong Tran", email = "tranhd95@gmail.com"}]
@@ -17,5 +13,25 @@ dependencies = [
     "toplogger@git+https://github.com/tranhd95/toplogger-enhanced"
 ]
 
-[project.optional-dependencies]
-dev = ["ruff"]
+[tool.poetry]
+name = "toplogger"
+version = "0.1.0"
+description = "TopLogger API SDK"
+authors = ["Hai Duong Tran <tranhd95@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+requests = "*"
+requests_cache = "*"
+plotly = "*"
+seaborn = "*"
+pandas = "*"
+toplogger = { git = "https://github.com/tranhd95/toplogger-enhanced", branch = "main" }
+
+[tool.poetry.dev-dependencies]
+ruff = "*"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
