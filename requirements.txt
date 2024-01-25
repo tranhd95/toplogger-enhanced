@@ -1,4 +1,0 @@
-requests
-plotly
-seaborn
-pandas
