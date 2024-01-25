@@ -1,0 +1,14 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "toplogger"
+authors = [{name = "Hai Duong Tran", email = "tranhd95@gmail.com"}]
+readme = "README.md"
+dynamic = ["version", "description"]
+
+dependencies = ["requests"]
+
+[project.optional-dependencies]
+dev = ["ruff"]
