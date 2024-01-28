@@ -15,7 +15,7 @@ def json_normalize(df, col):
 def get_user_master_tables(user_id):
     tl = TopLogger()
     ascends = (
-        tl.user_ascends(user_id).includes("climb").filters({"used": True}).execute()
+        tl.user_ascends(user_id).includes("climb").execute()
     )
     df_ascends = (
         pd.DataFrame(ascends)
@@ -29,6 +29,7 @@ def get_user_master_tables(user_id):
                 "climb_grade": float,
             }
         )
+        .query("topped == True")
         .assign(date_logged=lambda x: pd.to_datetime(x["date_logged"]))
     )
     gyms = {
