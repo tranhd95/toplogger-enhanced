@@ -23,11 +23,12 @@ def data(gym_id):
     return (
         pd.DataFrame(climbs)
         .query('lived == True')
+        .astype({'setter_id': 'Int64'})
         .assign(
             grade_str=lambda x: x['grade'].map(NUM2FRENCHGRADE.get).astype('string'),
             color=lambda x: x['hold_id'].map(lambda y: gym_holds[y]['brand']),
             hexcolor=lambda x: x['hold_id'].map(lambda y: gym_holds[y]['color']),
-            setter=lambda x: x['setter_id'].map(lambda y: gym_setters[y]['name'], na_action='ignore'),
+            setter=lambda x: x['setter_id'].map(lambda y: gym_setters.get(y, {'name': ''})['name'], na_action='ignore'),
         )
         .astype(
             {
@@ -37,6 +38,8 @@ def data(gym_id):
     )
 
 df_climbs = data(gym_id)
+
+st.button("Force refresh", type="primary", on_click=lambda: data.clear())
 
 # Alltime grade
 fig = px.histogram(
