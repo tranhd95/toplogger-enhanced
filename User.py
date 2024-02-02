@@ -2,29 +2,38 @@ import streamlit as st
 import pandas as pd
 import seaborn as sns
 from toplogger.analysis import get_user_master_tables
+from toplogger.utils import NUM2FRENCHGRADE
+from toplogger import TopLogger
 import plotly.express as px
 import plotly.graph_objects as go
-from toplogger.utils import NUM2FRENCHGRADE
 import re
-
-
-sns.set_theme(style="whitegrid")
-RE_NUMBER = re.compile('\d+')
-user_id = st.text_input("Enter your TopLogger's user ID or whole TopLogger's profile URL:")
-if user_id:
-    try:
-        user_id = RE_NUMBER.findall(user_id)[0]
-        user_id = int(user_id)
-    except ValueError:
-        st.write("Must be a number.")
-
 
 @st.cache_data
 def cached(user_id):
-    return get_user_master_tables(user_id)
+    tl = TopLogger()
+    user = tl.user(user_id).execute()
+    return *get_user_master_tables(user_id), user
 
+RE_UID = re.compile('^https://app.toplogger.nu/.*uid=(\d+).*|^(\d+)$')
+def parse_user_id(string):
+    user_id_str = None
+    if match := RE_UID.search(string):
+        user_id_str = next((m for m in match.groups() if m), None)
+    if not user_id_str:
+        st.write("Enter your TopLogger's user ID or whole TopLogger's profile URL:")
+        return None
+    else:
+        return int(user_id_str)
+
+sns.set_theme(style="whitegrid")
+user_id_input = st.text_input("Enter your TopLogger's user ID or whole TopLogger's profile URL:")
+if user_id_input:
+    user_id = parse_user_id(user_id_input)
+else:
+    user_id = None
 
 if user_id:
+    st.button("Force refresh", type="primary", on_click=lambda: cached.clear())
     with st.spinner(text="In progress"):
         (
             df_ascends,
@@ -32,11 +41,14 @@ if user_id:
             df_community_grades,
             df_community_opinions,
             df_toppers,
+            user
         ) = cached(user_id)
 
-
-        st.button("Force refresh", type="primary", on_click=lambda: cached.clear())
-
+        st.markdown(f'''
+                    <h1 style="text-align: center">{user['first_name']} {user['last_name']}</h1>
+                    <div style="text-align: center"><img src="{user['avatar']}" /></div>
+                    ''', unsafe_allow_html=True)
+        
         st.title("All-time stats")
 
         df_major_vote = df_community_grades.assign(
