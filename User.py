@@ -18,6 +18,9 @@ def cached(user_id):
     user = TL.user(user_id).execute(cached=False)
     return *get_user_master_tables(user_id), user
 
+@st.cache_data
+def get_cached_gym_climbs(gym_id):
+    return get_gym_climbs(gym_id, cached=False)
 
 RE_UID = re.compile("^https://app.toplogger.nu/.*uid=(\d+).*|^(\d+)$")
 
@@ -137,7 +140,7 @@ if user_id:
         for gym_id in df_ascends.climb_gym_id.unique():
             if gym_id not in hangar_gym_ids:
                 continue
-            df_climbs = get_gym_climbs(gym_id).merge(
+            df_climbs = get_cached_gym_climbs.merge(
                 df_ascends[["climb_id", "date_logged"]],
                 left_on="id_x",
                 right_on="climb_id",

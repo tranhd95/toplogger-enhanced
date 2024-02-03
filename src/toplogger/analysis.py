@@ -110,9 +110,9 @@ def get_user_master_tables(user_id):
     )
 
 
-def get_gym_climbs(gym_id):
+def get_gym_climbs(gym_id, cached=True):
     tl = TopLogger()
-    climbs = tl.climbs(gym_id).execute()
+    climbs = tl.climbs(gym_id).execute(cached=cached)
     gym_holds = get_gym_holds_dict(gym_id)
     gym_setters = get_gym_setters_dict(gym_id)
 
