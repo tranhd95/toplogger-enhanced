@@ -21,6 +21,10 @@ class RequestBuilder:
         self.includes_ = []
         self.filters_ = {}
 
+    def __repr__(self):
+        self._build()
+        return f"RequestBuilder(url={self.url}, method={self.method}, params={self.params}, data={self.data})"
+
     @chainable
     def set_url(self, url) -> "RequestBuilder":
         self.url = url
@@ -45,9 +49,12 @@ class RequestBuilder:
     def filters(self, value) -> "RequestBuilder":
         self.filters_ = {**self.filters_, **value}
 
-    def build(self) -> requests.PreparedRequest:
+    def _build(self) -> None:
         json_params = json.dumps({"includes": self.includes_, "filters": self.filters_})
         self.add_param("json_params", json_params)
+
+    def build(self) -> requests.PreparedRequest:
+        self._build()
         return requests.Request(
             self.method, self.url, params=self.params, data=self.data
         ).prepare()

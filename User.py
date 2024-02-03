@@ -1,20 +1,36 @@
 import streamlit as st
 import pandas as pd
 import seaborn as sns
-from toplogger.analysis import get_user_master_tables
+from toplogger.analysis import get_user_master_tables, get_gym_climbs
 from toplogger.utils import NUM2FRENCHGRADE
 from toplogger import TopLogger
 import plotly.express as px
 import plotly.graph_objects as go
 import re
 
+TL = TopLogger()
+GYMS = {"Brno": 206, "Ostrava": 207}
+
+
 @st.cache_data
 def cached(user_id):
-    tl = TopLogger()
-    user = tl.user(user_id).execute()
+    global TL
+    user = TL.user(user_id).execute(cached=False)
     return *get_user_master_tables(user_id), user
 
-RE_UID = re.compile('^https://app.toplogger.nu/.*uid=(\d+).*|^(\d+)$')
+
+@st.cache_data
+def cached_hangar_challenges():
+    global TL
+    return {
+        gym_loc: TL.groups(gym_id).execute(cached=False)
+        for gym_loc, gym_id in gyms.items()
+    }
+
+
+RE_UID = re.compile("^https://app.toplogger.nu/.*uid=(\d+).*|^(\d+)$")
+
+
 def parse_user_id(string):
     user_id_str = None
     if match := RE_UID.search(string):
@@ -25,13 +41,23 @@ def parse_user_id(string):
     else:
         return int(user_id_str)
 
-sns.set_theme(style="whitegrid")
-user_id_input = st.text_input("Enter your TopLogger's user ID or whole TopLogger's profile URL:")
-if user_id_input:
-    user_id = parse_user_id(user_id_input)
-else:
-    user_id = None
 
+def color_boolean(val):
+    color = ""
+    if not val:
+        color = "red"
+    elif val:
+        color = "green"
+    return f"text-align: center !important;"
+
+
+sns.set_theme(style="whitegrid")
+# user_id_input = st.text_input("Enter your TopLogger's user ID or whole TopLogger's profile URL:")
+# if user_id_input:
+#     user_id = parse_user_id(user_id_input)
+# else:
+#     user_id = None
+user_id = 9347354481
 if user_id:
     st.button("Force refresh", type="primary", on_click=lambda: cached.clear())
     with st.spinner(text="In progress"):
@@ -41,14 +67,17 @@ if user_id:
             df_community_grades,
             df_community_opinions,
             df_toppers,
-            user
+            user,
         ) = cached(user_id)
 
-        st.markdown(f'''
+        st.markdown(
+            f"""
                     <h1 style="text-align: center">{user['first_name']} {user['last_name']}</h1>
                     <div style="text-align: center"><img src="{user['avatar']}" /></div>
-                    ''', unsafe_allow_html=True)
-        
+                    """,
+            unsafe_allow_html=True,
+        )
+
         st.title("All-time stats")
 
         df_major_vote = df_community_grades.assign(
@@ -106,8 +135,69 @@ if user_id:
         st.plotly_chart(fig)
         # f"background-color: {x}"
 
-        df = df_date.sort_values('climb_grade', ascending=False).assign(index=lambda x: range(1, len(x)+1)).set_index('index')[['hexcolor', 'grade_string', 'climb_average_opinion', 'setter']]
-        styler = df.style.map(lambda x: f"background-color: {x}; color: {x}; opacity: 0.99",subset=['hexcolor'])
-        st.table(
-            styler
+        df = (
+            df_date.sort_values("climb_grade", ascending=False)
+            .assign(index=lambda x: range(1, len(x) + 1))
+            .set_index("index")[
+                ["hexcolor", "grade_string", "climb_average_opinion", "setter"]
+            ]
         )
+        styler = df.style.map(
+            lambda x: f"background-color: {x}; color: {x}; opacity: 0.99",
+            subset=["hexcolor"],
+        )
+        st.table(styler)
+
+        st.title("Current Hangar Challenge Progress")
+
+        hangar_gym_ids = {206, 207}
+        for gym_id in df_ascends.climb_gym_id.unique():
+            if gym_id not in hangar_gym_ids:
+                continue
+            df_climbs = get_gym_climbs(gym_id).merge(
+                df_ascends[["climb_id", "date_logged"]],
+                left_on="id_x",
+                right_on="climb_id",
+                how="left",
+            )
+            df_challenge = df_climbs.query(
+                'circuit_name.str.lower().str.contains("challenge")'
+            )
+            st.header(gyms[gym_id]["name"])
+            for challenege_name, df_challenge_circ in df_challenge.groupby(
+                "circuit_name"
+            ):
+                df_ = (
+                    df_challenge_circ.reset_index()
+                    .assign(
+                        date_logged=lambda x: pd.to_datetime(x.date_logged).dt.date,
+                        topped=lambda x: x.date_logged.notna().apply(
+                            lambda y: "✅" if y else "🔲"
+                        ),
+                    )[
+                        [
+                            "topped",
+                            "number",
+                            "hexcolor",
+                            "grade_str",
+                            "average_opinion",
+                            "setter",
+                            "date_logged",
+                        ]
+                    ]
+                    .sort_values(by="number")
+                    .set_index("number")
+                    .reset_index(drop=True)  # Because of routes with the same number
+                    .assign(
+                        date_logged=lambda x: x.date_logged.apply(
+                            lambda y: "" if pd.isnull(y) else y
+                        )
+                    )
+                )
+                df_.index += 1
+                styler = df_.style.map(
+                    lambda x: f"background-color: {x}; color: {x}; opacity: 0.99",
+                    subset=["hexcolor"],
+                ).map(color_boolean, subset=["topped"])
+                st.subheader(challenege_name)
+                st.table(styler)

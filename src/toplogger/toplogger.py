@@ -41,3 +41,10 @@ class TopLogger:
         return RequestBuilder(self).set_url(
             f"{self.base_url}/gyms/{gym_id}/climbs/{climb_id}/stats"
         )
+
+    def groups(self, gym_id: Union[int, str]):
+        return (
+            RequestBuilder(self)
+            .set_url(f"{self.base_url}/groups")
+            .filters({"gym_id": gym_id, "live": True})
+        )

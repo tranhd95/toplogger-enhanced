@@ -3,20 +3,22 @@ from toplogger import TopLogger
 from toplogger.utils import (
     NUM2FRENCHGRADE,
     list2dict,
+    get_gym_holds_dict,
+    get_gym_setters_dict,
 )
 
 
 def json_normalize(df, col):
-    return df.assign(**pd.json_normalize(df[col]).add_prefix(f"{col}_")).drop(
-        columns=[col]
+    return (
+        df.reset_index(drop=True)
+        .assign(**pd.json_normalize(df[col]).add_prefix(f"{col}_"))
+        .drop(columns=[col])
     )
 
 
 def get_user_master_tables(user_id):
     tl = TopLogger()
-    ascends = (
-        tl.user_ascends(user_id).includes("climb").execute()
-    )
+    ascends = tl.user_ascends(user_id).includes("climb").execute()
     df_ascends = (
         pd.DataFrame(ascends)
         .pipe(json_normalize, col="climb")
@@ -77,7 +79,8 @@ def get_user_master_tables(user_id):
 
     return (
         df_ascends.assign(
-            grade_string=lambda x: x["climb_grade"].astype(str)
+            grade_string=lambda x: x["climb_grade"]
+            .astype(str)
             .map(NUM2FRENCHGRADE.get)
             .astype("string"),
             color=lambda x: x.apply(
@@ -103,4 +106,63 @@ def get_user_master_tables(user_id):
         df_community_grades,
         df_community_opinions,
         df_toppers,
+    )
+
+
+def get_gym_climbs(gym_id):
+    tl = TopLogger()
+    climbs = tl.climbs(gym_id).execute()
+    gym_holds = get_gym_holds_dict(gym_id)
+    gym_setters = get_gym_setters_dict(gym_id)
+
+    df_climbs = (
+        pd.DataFrame(climbs)
+        .query("lived == True")
+        .astype({"setter_id": "Int64"})
+        .assign(
+            grade_str=lambda x: x["grade"].map(NUM2FRENCHGRADE.get).astype("string"),
+            color=lambda x: x["hold_id"].map(lambda y: gym_holds[y]["brand"]),
+            hexcolor=lambda x: x["hold_id"].map(lambda y: gym_holds[y]["color"]),
+            setter=lambda x: x["setter_id"].map(
+                lambda y: gym_setters.get(y, {"name": ""})["name"], na_action="ignore"
+            ),
+        )
+        .astype(
+            {
+                "grade": float,
+            }
+        )
+    )
+
+    for gym_id in df_climbs.gym_id.unique():
+        df_challenge = (
+            pd.DataFrame(tl.groups(int(gym_id)).includes("climb_groups").execute())
+            .explode("climb_groups")
+            .pipe(json_normalize, col="climb_groups")
+            .drop(
+                columns=[
+                    "gym_id",
+                    "order",
+                    "live",
+                    "lived",
+                    "climbs_type",
+                    "score_system",
+                    "approve_participation",
+                    "split_gender",
+                    "climb_groups_order",
+                    "split_age",
+                ]
+            )
+            .rename(columns={"name": "circuit_name"})
+            .reset_index()
+        )
+        df_climbs = df_climbs.merge(
+            df_challenge, how="left", left_on="id", right_on="climb_groups_climb_id"
+        )
+    return df_climbs.fillna({"circuit_name": "", "remarks": ""}).assign(
+        number=lambda x: x.number.str.extract(
+            r"(\d+)",
+        )
+        .fillna(-1)
+        .astype(int),
     )
