@@ -1,10 +1,11 @@
 import pandas as pd
+
 from toplogger import TopLogger
 from toplogger.utils import (
     NUM2FRENCHGRADE,
-    list2dict,
     get_gym_holds_dict,
     get_gym_setters_dict,
+    list2dict,
 )
 
 

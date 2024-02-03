@@ -1,5 +1,7 @@
-from typing import List, Any
+from typing import Any, List
+
 import pandas as pd
+
 from .toplogger import TopLogger
 
 # https://github.com/rubenvanerk/toplogger-h2h/blob/5d434ae01e837c9cced84a403e19045338edeb2c/config/grades.php#L18

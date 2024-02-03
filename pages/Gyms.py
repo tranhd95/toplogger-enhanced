@@ -1,14 +1,16 @@
-from toplogger import TopLogger
-import streamlit as st
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
+import plotly.express as px
+import seaborn as sns
+import streamlit as st
+from toplogger import TopLogger
 from toplogger.utils import (
+    NUM2FRENCHGRADE,
     get_gym_holds_dict,
     get_gym_setters_dict,
-    NUM2FRENCHGRADE,
     json_normalize,
 )
-import plotly.express as px
-
 
 tl = TopLogger()
 
@@ -109,7 +111,7 @@ fig = px.histogram(
     df_opinions,
     y="average_stars",
     x="setter",
-    title=f"All-time routes average opinion by setter",
+    title="All-time routes average opinion by setter",
     labels={"average_stars": "Average opinion (1-5 stars)", "setter": "Setter"},
 )
 fig.update_xaxes(categoryorder="total descending")
@@ -117,8 +119,6 @@ fig.update_layout(yaxis_title="1-5 Opinion")
 fig.update_layout(yaxis_range=[3.5, 5])
 st.plotly_chart(fig)
 
-from itertools import repeat, chain
-import numpy as np
 
 df_setter_grade_diff = (
     df_climbs.reset_index()
@@ -144,11 +144,6 @@ df_setter_grade_diff = (
     .iloc[:, 1:]
 )
 
-import matplotlib.pyplot as plt
-import seaborn as sns
-import plotly.graph_objects as go
-
-
 plt.title("Positive = setter grades harder than community")
 fig = sns.heatmap(
     df_setter_grade_diff.iloc[:, 1:],
@@ -159,12 +154,3 @@ fig = sns.heatmap(
     linewidth=0.5,
 )
 st.pyplot(fig.figure)
-
-# fig = go.Figure(data=go.Heatmap(
-#         z=df_setter_grade_diff,
-#         x=df_setter_grade_diff.columns,
-#         y=df_setter_grade_diff.index,
-#         text=df_setter_grade_diff.values,
-#         colorscale='Viridis'))
-
-# st.plotly_chart(fig)

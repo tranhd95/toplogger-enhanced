@@ -1,6 +1,7 @@
 import json
-import requests
 from typing import Any
+
+import requests
 
 
 def chainable(method):

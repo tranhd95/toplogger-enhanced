@@ -1,7 +1,9 @@
-from .builder import RequestBuilder
-from typing import Union, Any
-import requests_cache
+from typing import Any, Union
+
 import requests
+import requests_cache
+
+from .builder import RequestBuilder
 
 
 class TopLogger:

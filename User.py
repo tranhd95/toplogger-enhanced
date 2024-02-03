@@ -1,15 +1,15 @@
-import streamlit as st
-import pandas as pd
-import seaborn as sns
-from toplogger.analysis import get_user_master_tables, get_gym_climbs
-from toplogger.utils import NUM2FRENCHGRADE
-from toplogger import TopLogger
-import plotly.express as px
-import plotly.graph_objects as go
 import re
 
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+import seaborn as sns
+import streamlit as st
+from toplogger import TopLogger
+from toplogger.analysis import get_gym_climbs, get_user_master_tables
+from toplogger.utils import NUM2FRENCHGRADE
+
 TL = TopLogger()
-GYMS = {"Brno": 206, "Ostrava": 207}
 
 
 @st.cache_data
@@ -17,15 +17,6 @@ def cached(user_id):
     global TL
     user = TL.user(user_id).execute(cached=False)
     return *get_user_master_tables(user_id), user
-
-
-@st.cache_data
-def cached_hangar_challenges():
-    global TL
-    return {
-        gym_loc: TL.groups(gym_id).execute(cached=False)
-        for gym_loc, gym_id in gyms.items()
-    }
 
 
 RE_UID = re.compile("^https://app.toplogger.nu/.*uid=(\d+).*|^(\d+)$")
@@ -42,17 +33,10 @@ def parse_user_id(string):
         return int(user_id_str)
 
 
-def color_boolean(val):
-    color = ""
-    if not val:
-        color = "red"
-    elif val:
-        color = "green"
-    return f"text-align: center !important;"
-
-
 sns.set_theme(style="whitegrid")
-user_id_input = st.text_input("Enter your TopLogger's user ID or whole TopLogger's profile URL:")
+user_id_input = st.text_input(
+    "Enter your TopLogger's user ID or whole TopLogger's profile URL:"
+)
 if user_id_input:
     user_id = parse_user_id(user_id_input)
 else:
@@ -197,6 +181,6 @@ if user_id:
                 styler = df_.style.map(
                     lambda x: f"background-color: {x}; color: {x}; opacity: 0.99",
                     subset=["hexcolor"],
-                ).map(color_boolean, subset=["topped"])
+                ).map(lambda x: "text-align: center !important;", subset=["topped"])
                 st.subheader(challenege_name)
                 st.table(styler)
