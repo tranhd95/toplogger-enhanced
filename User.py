@@ -52,12 +52,11 @@ def color_boolean(val):
 
 
 sns.set_theme(style="whitegrid")
-# user_id_input = st.text_input("Enter your TopLogger's user ID or whole TopLogger's profile URL:")
-# if user_id_input:
-#     user_id = parse_user_id(user_id_input)
-# else:
-#     user_id = None
-user_id = 9347354481
+user_id_input = st.text_input("Enter your TopLogger's user ID or whole TopLogger's profile URL:")
+if user_id_input:
+    user_id = parse_user_id(user_id_input)
+else:
+    user_id = None
 if user_id:
     st.button("Force refresh", type="primary", on_click=lambda: cached.clear())
     with st.spinner(text="In progress"):
