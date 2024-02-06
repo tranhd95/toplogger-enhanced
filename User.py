@@ -140,7 +140,7 @@ if user_id:
         for gym_id in df_ascends.climb_gym_id.unique():
             if gym_id not in hangar_gym_ids:
                 continue
-            df_climbs = get_cached_gym_climbs.merge(
+            df_climbs = get_cached_gym_climbs(gym_id).merge(
                 df_ascends[["climb_id", "date_logged"]],
                 left_on="id_x",
                 right_on="climb_id",
